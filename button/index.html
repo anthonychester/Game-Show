@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, inital-sacle=1">
+  <title>Button</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-rows: 50% 50%;
+      grid-template-columns: 50% 50%;
+      width: 100%;
+      height: 100%;
+    }
+
+    .buttons button {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    #red {
+      background-color: rgb(203, 0, 0);
+    }
+
+    #red:active {
+      background-color: rgb(153, 0, 0)
+    }
+
+    #blue {
+      background-color: rgb(28, 0, 203);
+    }
+
+    #blue:active {
+      background-color: rgb(22, 0, 160)
+    }
+
+    #green {
+      background-color: rgb(3, 167, 0);
+    }
+
+    #green:active {
+      background-color: rgb(3, 117, 0);
+    }
+
+    #orange {
+      background-color: rgb(203, 110, 0);
+    }
+
+    #orange:active {
+      background-color: rgb(108, 94, 0);
+    }
+
+    input {
+      outline: none;
+      border: none;
+      background-color: #D9D9D9;
+      text-align: center;
+      width: 90%;
+      height: 10%;
+      margin-right: 10px;
+      margin-left: 10px;
+      font-size: 25px;
+    }
+
+    #name-div {
+      width: 100%;
+      height: 100%;
+      text-align: center;
+    }
+
+    .page-title {
+    text-decoration: underline;
+    font-size: 35px;
+}
+
+#next {
+        background-color: #D9D9D9; /* Green */
+        border: none;
+        color: black;
+        padding: 15px 16px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+
+        margin-top: 5%;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    const ws = new WebSocket('ws://192.168.0.233:4000/ws');
+    ws.onmessage = (message)=> {
+      let data = JSON.parse(message.data);
+      console.log(data.event == "removed" && document.id == data.id);
+      if (data.event == "removed" && document.id == data.id) {
+        console.log("w");
+        location.reload();
+      } else if (data.event == "id") {
+        document.id = data.id;
+      }
+    }
+  </script>
+
+  <div class="buttons" id="buttons">
+    <button id="red" onclick='ws.send(JSON.stringify({"event": "press", "color": "red", "time": Date.now()}));'></button>
+    <button id="blue" onclick='ws.send(JSON.stringify({"event": "press", "color": "blue", "time": Date.now()}));'></button>
+    <button id="green" onclick='ws.send(JSON.stringify({"event": "press", "color": "green", "time": Date.now()}));'></button>
+    <button id="orange" onclick='ws.send(JSON.stringify({"event": "press", "color": "orange", "time": Date.now()}));'></button>
+  </div>
+
+
+  <div id="name-div">
+    <div style="text-align: center;">
+      <h1 class="page-title">Enter Name</h1>
+  </div>
+      <!-- <div class="input-div"> -->
+      <input id="name">
+      <!-- </div> -->
+      <br>
+      <button id="next" onclick="press()">Next</button>
+  </div>
+
+
+  <script>
+
+    //const ws = new WebSocket('ws://192.168.0.233:1234/ws');
+
+    /*
+    document.onclick =() => {
+      ws.send(JSON.stringify({"event": "press"}));
+    };
+    */
+    document.getElementById("buttons").style.display = "none";
+
+    var elem = document.body; // Make the body go full screen.
+
+    /* ws.on("remove") = () => {
+
+    } */
+
+    function press() {
+      document.getElementById("name-div").style.display = "none";
+      document.getElementById("buttons").style.display = "grid";
+      ws.send(JSON.stringify({"event": "joined", "name": document.getElementById("name").value}));
+      requestFullScreen(elem);
+
+      //console.log(ws);
+    }
+
+    function requestFullScreen(element) {
+    // Supports most browsers and their versions.
+    var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullScreen;
+
+    if (requestMethod) { // Native full screen.
+        requestMethod.call(element);
+    } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
+        var wscript = new ActiveXObject("WScript.Shell");
+        if (wscript !== null) {
+            wscript.SendKeys("{F11}");
+        }
+    }
+}
+  </script>
+</body>
+
+</html>

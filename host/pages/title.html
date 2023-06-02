@@ -1,0 +1,47 @@
+<link href='https://fonts.googleapis.com/css?family=Kadwa' rel='stylesheet'>
+<style> 
+    #play-div {
+        height: 20%;
+        text-align: center;
+    }
+
+    #title {
+        top: 50%;
+        transform: translateY(-50%);
+        position: relative;
+        font-family: "Kadwa";
+        font-size: 110;
+    }
+
+    #play {
+        vertical-align: baseline;
+
+        background-color: #D9D9D9; /* Green */
+        border: none;
+        color: black;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 32px;
+    }
+</style>
+
+<script>
+    
+    function next() {
+        
+    };
+</script>
+
+<div style="height: 45%;">
+        <h1 id="title">Trivia Game</h1>
+</div>
+<div style="height: 25%;"></div>
+<div id="play-div">
+    <button id="play" onclick='
+        const next_page = new CustomEvent("next_page", {detail: "newgame"});
+        document.dispatchEvent(next_page);
+        '>Play</button>
+    <div style="height: 10%;"></div>
+</div>

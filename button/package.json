@@ -1,0 +1,13 @@
+{
+    "name": "button",
+    "version": "1.0.0",
+    "description": "",
+    "source": "index.html",
+    "scripts": {
+      "start": "parcel --port 80",
+      "build": "parcel build"
+    },
+    "author": "",
+    "license": "ISC"
+  }
+  

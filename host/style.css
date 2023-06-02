@@ -1,0 +1,17 @@
+#title {
+    text-align: center;
+}
+
+html, body{
+    height: 100%;
+    margin: 0;
+}
+
+#main {
+    height: 100%;
+}
+
+.page-title {
+    text-decoration: underline;
+    font-size: 40px;
+}

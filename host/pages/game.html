@@ -1,0 +1,312 @@
+<style>
+    #parent {
+        display: grid;
+        grid-template-rows: 40% auto;
+        height: 100%;
+    }
+
+    .question {
+        text-align: center;
+        background-color: #222222;
+        color: #F1EFEF;
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .question h2 {}
+
+    .timer {
+        background-color: #373737;
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .timer h1 {
+        color: #FFFFFF;
+        font-size: 180px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .buttons {
+        display: grid;
+        grid-template-rows: 50% 50%;
+        grid-template-columns: 50% 50%;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+    }
+
+    .buttons div {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .buttons div h2 {
+        color: #FFFFFF;
+        font-size: 30px;
+    }
+
+    .red {
+        background-color: rgb(203, 0, 0);
+    }
+
+    .blue {
+        background-color: rgb(28, 0, 203);
+    }
+
+    .green {
+        background-color: rgb(3, 167, 0);
+    }
+
+    .orange {
+        background-color: rgb(203, 110, 0);
+    }
+
+    .correct {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #373737;
+        color: #FFFFFF;
+    }
+
+    .correct h5 {
+        margin-bottom: 0px;
+    }
+
+    .correct h2 {
+        margin-top: 10px;
+        font-size: 60px;
+    }
+
+    .correct h3 {
+        font-size: 42px;
+    }
+</style>
+
+<div id="parent">
+    <div class="question">
+        <h2 id="question-text">Question</h2>
+    </div>
+    <div id="timer" class="timer">
+        <h1 id="time">3</h1>
+    </div>
+
+    <div id="muti" class="buttons">
+        <div class="red">
+            <h2 id="red-text">1</h2>
+        </div>
+        <div class="blue">
+            <h2 id="blue-text">2</h2>
+        </div>
+        <div class="green">
+            <h2 id="green-text">3</h2>
+        </div>
+        <div class="orange">
+            <h2 id="orange-text">4</h2>
+        </div>
+    </div>
+
+    <div id="bool" class="buttons" style="grid-template-rows: 100%">
+        <div class="red">
+            <h2>True</h2>
+        </div>
+        <div class="blue">
+            <h2>False</h2>
+        </div>
+    </div>
+
+    <div id="correct" class="correct">
+        <div style="text-align: center; margin-top: 60px;">
+            <h5>Correct Answer</h5>
+            <h2 id="answer"></h2>
+        </div>
+        <h3 id="person"></h3>
+        <div></div>
+    </div>
+</div>
+
+<script>
+    let mode = 0;
+    let question_num = -1;
+    let questions = document.questions.results;
+    //while(questions.length > question_num) {
+    let correct;
+    let time;
+    let now;
+    let answers;
+
+    document.points = new Map();
+
+    for(let [key, value] of document.players) {
+        document.points.set(key, 0);
+    }
+
+    newQuestion();
+    
+    document.ws.onmessage = (message) => {
+        let data = JSON.parse(message.data);
+        let event = data.event;
+
+        //console.log(event == "press", time, document.players.has(data.sender));
+        if (event == "press" && time == 0 && document.players.has(data.sender) && !answers.has(data.sender)) {
+            if (questions[question_num].type == "multiple" || (data.color != "green" && data.color != "orange")) {
+                //console.log(document.players.get(data.sender) + "has answered: " + data.color);
+                answers.set(data.sender, { color: data.color, time: data.time });
+
+                if (answers.size == document.players.size) {
+                    //console.log("all");
+                    let id = DisplayAns(answers, correct, questions[question_num].correct_answer, now);
+                    let points = document.points.get(id);
+                    //console.log(points);
+                    document.points.set(id, points + 1);
+                    let nextQ = window.setInterval(() => {
+                    if(questions.length > question_num) {   
+                        newQuestion();
+                    } else {
+                        //end game
+                        const next_page = new CustomEvent("next_page", { detail: "winpage" });
+                        document.dispatchEvent(next_page);
+                    }
+                    window.clearInterval(nextQ);
+                    }, 4000);
+                }
+            }
+        }else if (event == "leave") {
+            document.players.delete(data.id);
+            document.ws.send(JSON.stringify({ "event": "removed", "id": id }));
+        }
+    }
+    //}
+
+    function newQuestion() {
+        //console.log(time);
+        time = 3;
+        answers = new Map();
+        question_num++;
+        correct = setText(questions[question_num]);
+        document.getElementById("timer").style.display = "flex";
+        document.getElementById("muti").style.display = "none";
+        document.getElementById("bool").style.display = "none";
+        document.getElementById("correct").style.display = "none";
+
+        let timer = window.setInterval(() => {
+        //console.log(time);
+        if(time == 0) {
+            //console.log("ooooooo");
+            if(questions[question_num].type == "multiple") {
+                document.getElementById("muti").style.display = "grid";
+            } else {
+                document.getElementById("bool").style.display = "grid";
+            }
+            document.getElementById("timer").style.display = "none";
+            now = Date.now();
+            document.getElementById("time").innerText = 3;
+            window.clearInterval(timer);
+        } else {
+            document.getElementById("time").innerText = time;
+            time--;
+        }
+    }, 1000);
+    }
+
+    function DisplayAns(answers, color, text, now) {
+        let top_id;
+        let time = -1;
+        for (let [id, data] of answers) {
+            //console.log(data.color == color, time == -1, data.time < time);
+            if (data.color == color) {
+                if (time == -1) {
+                    //console.log(data);
+                    top_id = id;
+                    time = data.time;
+                } else if (data.time < time) {
+                    top_id = data.id;
+                    time = data.time;
+                }
+            }
+        }
+        document.getElementById("muti").style.display = "none";
+        document.getElementById("bool").style.display = "none";
+        document.getElementById("correct").style.display = "flex";
+        // don't forget about no correct ans
+        
+        let winner;
+        if(top_id) {
+            winner = document.players.get(top_id) + " - " + tosec((time - now));
+        } else {
+            winner = "No one";
+        }
+        //console.log("Correct: " + text);
+        //console.log(now, time, time - now);
+        //console.log(document.players.get(top_id) + " - " + tosec((time - now)));
+        document.getElementById("answer").innerHTML = text;
+        document.getElementById("person").innerHTML = winner;
+
+        return top_id;
+    }
+
+
+    function tosec(ms) {
+        let sec = Math.floor(ms / 1000);
+        let rms = ms - (sec * 1000);
+        if (rms < 10) {
+            return sec + ".00" + rms + "s";
+        } else {
+            if (rms < 100) {
+                return sec + ".0" + rms + "s";
+            }
+        }
+        return sec + "." + rms + "s";
+    }
+
+    //correct_answer incorrect_answers
+    function setText(question) {
+        document.getElementById("question-text").innerText = unEscape(question.question);
+        if (question.type == "multiple") {
+            let colors = ["red", "blue", "green", "orange"];
+            correct = colors.splice(Math.floor(Math.random(4) * 4), 1)[0];
+            //console.log(colors);
+            document.getElementById(correct + "-text").innerText = unEscape(question.correct_answer);
+            for (let i = 3; i > 0; i--) {
+                let len = colors.length;
+                let color = colors.splice(Math.floor(Math.random(i) * i), 1)[0];
+                document.getElementById(color + "-text").innerText = unEscape(question.incorrect_answers[i - 1]);
+            }
+            return correct;
+        } else {
+            if (question.correct_answer == "True") {
+                return "red"
+            } else {
+                return "blue"
+            }
+        }
+
+    }
+
+    function unEscape(htmlStr) {
+        htmlStr = htmlStr.replace(/&lt;/g, "<");
+        htmlStr = htmlStr.replace(/&gt;/g, ">");
+        htmlStr = htmlStr.replace(/&quot;/g, "\"");
+        htmlStr = htmlStr.replace(/&#039;/g, "\'");
+        htmlStr = htmlStr.replace(/&amp;/g, "&");
+        htmlStr = htmlStr.replace(/&micro;/g, "µ");
+        htmlStr = htmlStr.replace(/&ldquo;/g, "“");
+        htmlStr = htmlStr.replace(/&rdquo;/g, "”");
+        htmlStr = htmlStr.replace(/&hellip;/g, "…");
+        htmlStr = htmlStr.replace(/&eacute;/g, "É");
+        return htmlStr;
+    }
+//&#039;
+</script>

@@ -1,0 +1,103 @@
+<style>
+
+    #cont {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        height: 100%;
+        padding: 0;
+        background-color: #222222;
+    }
+
+    .score {
+        color: #dbdbdb;
+        display: flex;
+        justify-content: space-between;
+        font-size: 30px;
+    }
+
+    .spacer {
+        width: 250px;
+    }
+
+    #first {
+        font-size: 70px;
+        font-weight: bold;
+        color:#FFFFFF;
+    }
+</style>
+
+<div id="cont">
+    <!--
+    <div class="score" id="first">
+        <h2>Player</h2>
+        <div class="spacer"></div>
+        <h2>0</h2>
+    </div>
+    <div class="score">
+        <h2>Player</h2>
+        <div class="spacer"></div>
+        <h2>0</h2>
+    </div>
+    <div class="score">
+        <h2>Player</h2>
+        <div class="spacer"></div>
+        <h2>0</h2>
+    </div>
+    -->
+</div>
+
+<script>
+//console.log("hi");
+let order = sort_players(document.points);    
+//console.log(order);
+
+let num = 0;
+
+while(num < order.length && num < 3) {
+    //console.log("num");
+    let div = document.createElement("div");
+    div.classList.add("score");
+    if(num == 0) {
+        div.id = "first";
+    }
+
+    let name = document.createElement("h2");
+    name.innerText = document.players.get(order[num][0]);
+    div.append(name);
+
+    let spacer = document.createElement("div");
+    spacer.classList.add("spacer");
+    div.append(spacer);
+
+    let score = document.createElement("h2");
+    score.innerText = order[num][1];
+    div.append(score);
+
+    document.getElementById("cont").append(div);
+
+    num++;
+}
+
+function sort_players(players) {
+    //console.log("sort");
+    let entries = Array.from(players.entries());
+
+    for(let i=0; i<entries.length; i++) {
+        let l = i;
+        for(let x=i;x<entries.length;x++) {
+            if(entries[x][1] > entries[l][1]) {
+                l = x;
+            }
+        }
+        let e = entries[i];
+        entries[i] = entries[l];
+        entries[l] = e;
+        //console.log(entries);
+    }
+    return entries;
+}
+</script>
+
